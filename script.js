@@ -1,37 +1,23 @@
 
 const setDOMInfo = info => {
   console.log("item",info)
-
+  // chrome.action.setBadgeText(
+  //   {
+  //     text: '5',
+  //   },
+  // )
+  chrome.storage.local.set({ info: info}).then(()=>{
+    console.log('value set')
+  }).catch((error)=>{
+    console.log("eror in value",error)
+  })
 
       const newDiv = document.createElement("div");
       newDiv.class= "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
       info && ['connection','messages','notification'].forEach((item)=>{
-        // const newContent = document.createTextNode(item);
-      //   const newContent = document.createElement('a');
-      // const linkText = document.createTextNode("Read More");
-      // newContent.appendChild(linkText);
-      // newContent.title = item.link;
-      // newContent.class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-      // newContent.href = item.link;
-      // newContent.style = 'color:blue'
-      // newContent.addEventListener('click', function(e) {
-      //   // window.open(item,'_tab')
-      //   e.preventDefault()
-      //   e.stopPropagation();
-      //   let handle = window.open(item.link);
-      //   handle.blur();
-      //   window.focus();
-      //   // window.open(item,'_blank','noopener')
-      // });
-      // const textArr = item.link.split('/')
-      // const textDesc = textArr[textArr.length - 1] ? textArr[textArr.length - 1].split('-').join(' ') :textArr[textArr.length - 2].split('-').join(' ')
-      // console.log("text",textDesc)
-      // const upperCaseTextDesc = textDesc.charAt(0).toUpperCase() + textDesc.slice(1);
-      // const linkDesc = document.createTextNode(upperCaseTextDesc);
-      //   // add the text node to the newly created div
-      //   newDiv.appendChild(linkDesc)
+       
         const newContent = document.createElement('div')
-        const text = document.createTextNode(`${item}: ${info[item].value}`)
+        const text = document.createTextNode(`${item}: ${info[item].value || 0}`)
         newContent.appendChild(text)
         newDiv.appendChild(newContent);
         const br = document.createElement("br");
@@ -39,18 +25,25 @@ const setDOMInfo = info => {
     })
     const currentDiv = document.getElementById('linkedin');
     const parent = document.getElementById('container');
-
+    const notificationDetailDiv = document.getElementById('notifications-details')
     
-  
+    const messageDetailDiv = document.getElementById('messages-details')
 
+
+    const notificationDDiv = document.createElement('div')
+    const messageDDiv = document.createElement('div')
 
     info && info.notificationDetails.map((notificationItem)=>{
+      
       const newContent = document.createElement('div')
+      newContent.classList.add("notification-list-item")
       const text = document.createTextNode(`${notificationItem}`)
       newContent.appendChild(text)
-      newDiv.appendChild(newContent);
+      notificationDDiv.appendChild(newContent);
       const br = document.createElement("br");
-      newDiv.appendChild(br)
+      br.classList.add("notification-list-item")
+
+      notificationDDiv.appendChild(br)
     })
 
 
@@ -58,11 +51,13 @@ const setDOMInfo = info => {
       const newContent = document.createElement('div')
       const text = document.createTextNode(`${messageItem}`)
       newContent.appendChild(text)
-      newDiv.appendChild(newContent);
+      messageDDiv.appendChild(newContent);
       const br = document.createElement("br");
-      newDiv.appendChild(br)
+      messageDDiv.appendChild(br)
     })
     parent.insertBefore(newDiv, currentDiv.nextSibling);
+    notificationDetailDiv.appendChild(notificationDDiv)
+    messageDetailDiv.appendChild(messageDDiv)
     
   };
 const getMessagesName = ()=> {
@@ -74,7 +69,7 @@ const getNotificationName = () =>{
 const notificationUpdates =  () => {
   console.log("inside notification updates")
     const data = document.querySelectorAll('.notification-badge--show')
-    const notificationList = {connection: {}, messages: {}, notification: {}, messageDetails:[], notificationDetails:[]}
+    const notificationList = {connection: {}, messages: {}, notification: {}, messageDetails:[], notificationDetails:[], filterNotifications:[]}
     data.forEach((notificationItem)=>{
         const identifyNode = notificationItem.children[1]
         if (identifyNode.innerHTML.includes('network')){
@@ -102,6 +97,15 @@ const notificationUpdates =  () => {
     messageDetails.forEach((notificationItem)=>{
       notificationList.messageDetails.push(notificationItem.innerText)
     })
+
+    // get filter notifications
+    notificationsResult.forEach((item)=>{
+      console.log("item",item)
+      if(item.children && item.children[0]?.children[0].ariaLabel?.includes('profile')){
+          console.log("true")
+          notificationList.filterNotifications.push(item.innerText)
+      }
+  })
     // const messagesResult = getMessagesName()
     // const notificationsResult = getNotificationName()
     // notificationList.messageDetails = document.querySelectorAll('.msg-conversation-listitem__participant-names');
@@ -170,3 +174,77 @@ window.addEventListener('DOMContentLoaded', () => {
     });
    
   });
+
+const settings = document.getElementsByClassName('settings')
+console.log("settings",settings)
+settings[0]?.addEventListener('click',() => { 
+  const newDiv = document.createElement('div')
+  const newContent = document.createElement('div')
+  const isExistRadio = document.getElementsByClassName('radio-select')
+  if (!isExistRadio[0]){
+    newDiv.classList.add("radio-select");
+    const text = document.createTextNode("select notification by user only")
+    const x = document.createElement("INPUT");
+    x.setAttribute("type", "checkbox");
+    x.setAttribute("id", "radio-notification");
+    x?.addEventListener('click',(event)=>{
+      console.log("event",event.target.checked)
+      if (event.target.checked){
+        chrome.storage.local.get(["info"]).then((result) => {
+          const filterNotifications = result.info.filterNotifications
+          
+         document.querySelectorAll('.notification-list-item').forEach((el)=>el.remove())
+         const notificationDDiv = document.createElement('div')
+         console.log("filter",filterNotifications)
+         filterNotifications &&filterNotifications.map((notificationItem)=>{
+          console.log("inside filter",notificationItem)
+          const newContent = document.createElement('div')
+          newContent.classList.add("notification-list-item")
+          const text = document.createTextNode(`${notificationItem}`)
+          newContent.appendChild(text)
+          notificationDDiv.appendChild(newContent);
+          const br = document.createElement("br");
+          
+          br.classList.add("notification-list-item")
+          notificationDDiv.appendChild(br)
+        })
+        const notificationDetailDiv = document.getElementById('notifications-details')
+        notificationDetailDiv.appendChild(notificationDDiv)
+         console.log("Value currently is " +  JSON.stringify(result.info.notificationDetails));
+
+        });
+      } else {
+        document.querySelectorAll('.notification-list-item').forEach((el)=>el.remove())
+        chrome.storage.local.get(["info"]).then((result) => {
+          const notificationResult = result.info.notificationDetails
+          const notificationDDiv = document.createElement('div')
+          console.log("filter",notificationResult)
+          notificationResult &&notificationResult.map((notificationItem)=>{
+           console.log("inside filter",notificationItem)
+           const newContent = document.createElement('div')
+           newContent.classList.add("notification-list-item")
+           const text = document.createTextNode(`${notificationItem}`)
+           newContent.appendChild(text)
+           notificationDDiv.appendChild(newContent);
+           const br = document.createElement("br");
+           br.classList.add("notification-list-item")
+           notificationDDiv.appendChild(br)
+         })
+         const notificationDetailDiv = document.getElementById('notifications-details')
+         notificationDetailDiv.appendChild(notificationDDiv)        })
+          
+      }
+    })
+    newContent.appendChild(text)
+    newContent.appendChild(x)
+    newDiv.appendChild(newContent);
+    const br = document.createElement("br");
+    newDiv.appendChild(br)
+    const parent = document.getElementById('notifications-settings');
+    parent.appendChild(newDiv);
+  } else {
+    document.querySelectorAll('.radio-select').forEach(e => e.remove());
+  }
+  
+})
+
