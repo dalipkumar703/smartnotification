@@ -1,5 +1,8 @@
 
 const setDOMInfo = info => {
+  const setEmailsInDom = () => {
+   
+  }
   console.log("item",info)
   // chrome.action.setBadgeText(
   //   {
@@ -44,6 +47,7 @@ const setDOMInfo = info => {
       br.classList.add("notification-list-item")
 
       notificationDDiv.appendChild(br)
+      
     })
 
 
@@ -58,13 +62,171 @@ const setDOMInfo = info => {
     parent.insertBefore(newDiv, currentDiv.nextSibling);
     notificationDetailDiv.appendChild(notificationDDiv)
     messageDetailDiv.appendChild(messageDDiv)
-    
+    // setEmailsInDom()
+    // const emailDiv = document.getElementById('emails')
+    // console.log("emailllllllllldvi",emailDiv)
+    //set email in dom
+    const EmailsDiv = document.createElement('div')
+    chrome.storage.local.get(['emails']).then((res)=>{
+        console.log("Emails", res.emails)
+      res.emails.map(email=>{
+        const newContent = document.createElement('div')
+        newContent.classList.add("email-list-item")
+        const text = document.createTextNode(`${email}`)
+        newContent.appendChild(text)
+        EmailsDiv.appendChild(newContent);
+        const br = document.createElement("br");
+        br.classList.add("email-list-item")
+      })
+    })
+    console.log("emails render",EmailsDiv)
+    const EmailsParentDiv = document.getElementById('emails')
+    console.log("div emaild",EmailsParentDiv)
+    EmailsParentDiv && EmailsParentDiv.appendChild(EmailsDiv)
   };
+
+
+
 const getMessagesName = ()=> {
   return document.getElementsByClassName('msg-conversation-listitem__participant-names')
 }
 const getNotificationName = () =>{
   return document.getElementsByClassName('nt-card')
+}
+let emailInterval 
+
+// const emailSetFromFeed = () => {
+//     const data = document.getElementsByClassName('feed-shared-update-v2')
+//     console.log("data",data)
+//     for (let feed of data){
+//       const email = feed.querySelectorAll('span[dir=ltr]')[1].innerText.split(' ').filter((item)=>item.includes('@'))
+//       console.log("email",email)
+//       chrome.storage.local.set({ emails: [email]})
+//     }
+
+// }
+const executeScriptsaveOpenJobsEmail = () => {
+  const setEmailsInDom = () => {
+    const EmailsDiv = document.createElement('div')
+    chrome.storage.local.get(['emails']).then((res)=>{
+        
+      res.emails.map(email=>{
+        const newContent = document.createElement('div')
+        newContent.classList.add("email-list-item")
+        const text = document.createTextNode(`${email}`)
+        newContent.appendChild(text)
+        EmailsDiv.appendChild(newContent);
+        const br = document.createElement("br");
+        br.classList.add("email-list-item")
+      })
+    })
+    console.log("emails render",EmailsDiv)
+    const EmailsParentDiv = document.getElementById('emails')
+    console.log("div emaild",EmailsParentDiv)
+    // EmailsDiv.appendChild(br)
+    EmailsParentDiv && EmailsParentDiv.appendChild(EmailsDiv)
+  }
+  const parseEmail = (email) => {
+    if (!email || email.length === 0){
+      return ''
+    }
+    const parser = [' ', '\n', '-', ":"]
+    let res = ''
+    parser.map((parseItem)=>{
+      
+      const splitArr = (res || email || '')?.split(parseItem);
+        splitArr.map((splitItem)=>{
+             if(splitItem.includes('@')){
+                 res = splitItem
+             }
+        })
+    })
+    return res;
+  }
+  //getting each feed
+  const data = document.getElementsByClassName('feed-shared-update-v2')
+  for (let feed of data){
+    const email = feed.querySelectorAll('span[dir=ltr]')[1]?.innerText.split(' ')?.filter((item)=>item.includes('@'))
+    const parsedEmail = parseEmail(email && email[0])
+    console.log("email",parsedEmail)
+    if (parsedEmail){
+      chrome.storage.local.get(['emails']).then(res=>{
+        console.log("emails",res)
+          console.log("parseEMail",parsedEmail)
+          const isExist = res.emails.filter((item)=>item === parsedEmail)
+          if (!isExist.length){
+            chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+          }
+      })
+    }
+   
+  }
+  //loop scroll in interval
+  const newDate = new Date()
+  emailInterval = setInterval(()=>{
+    const minuteDiff = Math.abs(newDate - new Date()) / 36e5
+    if (minuteDiff > 0.016){
+      console.log("1 min over")
+      clearInterval(emailInterval)
+      // setEmailsInDom()
+    }
+    window.scrollBy(600,600)
+    const data = document.getElementsByClassName('feed-shared-update-v2')
+    for (let feed of data){
+      const email = feed.querySelectorAll('span[dir=ltr]')[1].innerText.split(' ').filter((item)=>item.includes('@'))
+      const parsedEmail = parseEmail(email && email[0])
+      if (parsedEmail){
+        chrome.storage.local.get(['emails']).then(res=>{
+          console.log("emails",res)
+          console.log("parseEMail",parsedEmail)
+          const isExist = res.emails.filter((item)=>item === parsedEmail)
+          if (!isExist.length){
+          chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+          }
+        })
+      }
+      
+    }
+  },2000)
+  return 6;
+  
+  // chrome.storage.local.get(['emails']).then(res=>{
+  //   return res.emails
+  // })
+}
+const saveOpenJobsEmail = () => {
+  // 
+  const setEmailsInDom = () => {
+    const EmailsDiv = document.createElement('div')
+    chrome.storage.local.get(['emails']).then((res)=>{
+        
+      res.emails.map(email=>{
+        const newContent = document.createElement('div')
+        newContent.classList.add("email-list-item")
+        const text = document.createTextNode(`${email}`)
+        newContent.appendChild(text)
+        EmailsDiv.appendChild(newContent);
+        const br = document.createElement("br");
+        br.classList.add("email-list-item")
+      })
+    })
+    console.log("emails render",EmailsDiv)
+    const EmailsParentDiv = document.getElementById('emails')
+    console.log("div emaild",EmailsParentDiv)
+    EmailsParentDiv && EmailsParentDiv.appendChild(EmailsDiv)
+  }
+  chrome.storage.local.get(["tabId"]).then((result) => {
+    chrome.scripting
+    .executeScript({
+      target : {tabId : result.tabId},
+      func : executeScriptsaveOpenJobsEmail,
+    })
+    .then((result) => {
+      console.log("injected a function 1", result)
+      setEmailsInDom(result.emails)
+     })
+  })
+ 
 }
 const notificationUpdates =  () => {
   console.log("inside notification updates")
@@ -119,7 +281,6 @@ const notificationUpdates =  () => {
 chrome.tabs.query({
   currentWindow: true
 }, tabs => {
-  console.log('tabs',tabs)
   // ...and send a request for the DOM info...
   tabs.forEach( (tabEach, index)=>{
     // let tabInfo = await chrome.tabs.get(tabEach.id);
@@ -127,6 +288,7 @@ chrome.tabs.query({
     console.log("info",tabEach);
     try{
       if(tabEach.url.includes('linkedin')){
+        chrome.storage.local.set({ tabId: tabEach.id})
         chrome.scripting
         .executeScript({
           target : {tabId : tabEach.id},
@@ -141,10 +303,11 @@ chrome.tabs.query({
     } catch(error){
       console.log("err",error)
     }
-   
+  
+
 window.addEventListener('DOMContentLoaded', () => {
     // ...query for the active tab...
-   
+    // chrome.storage.local.set({ emails: []})
         console.log("page")
         // chrome.tabs.sendMessage(
         //   tabEach.id,
@@ -180,15 +343,20 @@ console.log("settings",settings)
 settings[0]?.addEventListener('click',() => { 
   const newDiv = document.createElement('div')
   const newContent = document.createElement('div')
+  const newContent1 =document.createElement('div')
+  // add checkbox for save open jobs email 
   const isExistRadio = document.getElementsByClassName('radio-select')
   if (!isExistRadio[0]){
     newDiv.classList.add("radio-select");
     const text = document.createTextNode("select notification by user only")
+    const textJobEmail = document.createTextNode("Save email for new jobs")
     const x = document.createElement("INPUT");
     x.setAttribute("type", "checkbox");
     x.setAttribute("id", "radio-notification");
     x?.addEventListener('click',(event)=>{
       console.log("event",event.target.checked)
+    // listener call 
+    //saveOpenJobsEmail
       if (event.target.checked){
         chrome.storage.local.get(["info"]).then((result) => {
           const filterNotifications = result.info.filterNotifications
@@ -235,9 +403,28 @@ settings[0]?.addEventListener('click',() => {
           
       }
     })
+    const emailInput = document.createElement("INPUT")
+    emailInput.setAttribute("type", "checkbox");
+    emailInput.setAttribute("id", "radio-notification");
+    emailInput?.addEventListener('click',(event)=>{
+      console.log("event",event.target.checked)
+    // listener call 
+    //saveOpenJobsEmail
+    if (event.target.checked){
+      saveOpenJobsEmail()
+    } else{
+      clearInterval(emailInterval)
+      chrome.storage.local.get(['emails']).then(res=>{
+       console.log("emails",res.emails)
+      })
+    }
+    })
     newContent.appendChild(text)
     newContent.appendChild(x)
     newDiv.appendChild(newContent);
+    newContent1.appendChild(textJobEmail)
+    newContent1.appendChild(emailInput)
+    newDiv.appendChild(newContent1)
     const br = document.createElement("br");
     newDiv.appendChild(br)
     const parent = document.getElementById('notifications-settings');
@@ -248,3 +435,15 @@ settings[0]?.addEventListener('click',() => {
   
 })
 
+const emailClear = document.getElementsByClassName('clear')[0]
+emailClear.addEventListener('click',()=>{
+  chrome.storage.local.set({ emails: []})
+})
+
+const sendMail = document.getElementsByClassName('sendMail')[0]
+sendMail.addEventListener('click',()=>{
+  chrome.storage.local.get(['emails']).then((res)=>{
+    const emails = res.emails.join(';')
+    window.open(`https://mail.google.com/mail/u/0/?fs=1&tf=cm&bcc=${emails}`)
+  })
+})
