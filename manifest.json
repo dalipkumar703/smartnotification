@@ -1,5 +1,5 @@
 {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Smart Notification",
     "manifest_version": 3,
     "background": {
@@ -13,8 +13,14 @@
     "name": "Smart Notification",
     "author": "Dalip",
     "action": {
+        "default_icon": "icon128.png",
+        "icons": {
+           "16": "icon16.png",
+           "48": "icon48.png",
+          "128": "icon128.png"
+        },
         "default_popup": "index.html",
-        "default_title": "Click Me"
+        "default_title": "Smart Notifications"
     },
     "content_scripts": [
         {

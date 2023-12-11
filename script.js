@@ -411,6 +411,32 @@ settings[0]?.addEventListener('click',() => {
     // listener call 
     //saveOpenJobsEmail
     if (event.target.checked){
+      const loadingButton = document.getElementsByClassName('loading')[0]
+      loadingButton.innerText = "loading...(it will take a minute)"
+      loadingButton.classList.display = 'block'
+      setTimeout(()=>{
+        const setEmailsInDom = () => {
+          console.log("emails in dom")
+          const EmailsDiv = document.createElement('div')
+          chrome.storage.local.get(['emails']).then((res)=>{
+              
+            res.emails.map(email=>{
+              const newContent = document.createElement('div')
+              newContent.classList.add("email-list-item")
+              const text = document.createTextNode(`${email}`)
+              newContent.appendChild(text)
+              EmailsDiv.appendChild(newContent);
+              const br = document.createElement("br");
+              br.classList.add("email-list-item")
+            })
+          })
+          console.log("emails render",EmailsDiv)
+          const EmailsParentDiv = document.getElementById('emails')
+          console.log("div emaild",EmailsParentDiv)
+          EmailsParentDiv && EmailsParentDiv.appendChild(EmailsDiv)
+        }
+      setEmailsInDom()
+      },1000*60)
       saveOpenJobsEmail()
     } else{
       clearInterval(emailInterval)
@@ -438,6 +464,7 @@ settings[0]?.addEventListener('click',() => {
 const emailClear = document.getElementsByClassName('clear')[0]
 emailClear.addEventListener('click',()=>{
   chrome.storage.local.set({ emails: []})
+  document.querySelectorAll('.email-list-item').forEach((el)=>el.remove())
 })
 
 const sendMail = document.getElementsByClassName('sendMail')[0]
@@ -447,3 +474,7 @@ sendMail.addEventListener('click',()=>{
     window.open(`https://mail.google.com/mail/u/0/?fs=1&tf=cm&bcc=${emails}`)
   })
 })
+
+
+const loadingButton = document.getElementsByClassName('loading')[0]
+loadingButton.classList.display = 'none'
