@@ -69,7 +69,7 @@ const setDOMInfo = info => {
     const EmailsDiv = document.createElement('div')
     chrome.storage.local.get(['emails']).then((res)=>{
         console.log("Emails", res.emails)
-      res.emails.map(email=>{
+      res.emails?.map(email=>{
         const newContent = document.createElement('div')
         newContent.classList.add("email-list-item")
         const text = document.createTextNode(`${email}`)
@@ -110,7 +110,7 @@ const executeScriptsaveOpenJobsEmail = () => {
     const EmailsDiv = document.createElement('div')
     chrome.storage.local.get(['emails']).then((res)=>{
         
-      res.emails.map(email=>{
+      res.emails?.map(email=>{
         const newContent = document.createElement('div')
         newContent.classList.add("email-list-item")
         const text = document.createTextNode(`${email}`)
@@ -145,22 +145,31 @@ const executeScriptsaveOpenJobsEmail = () => {
   }
   //getting each feed
   const data = document.getElementsByClassName('feed-shared-update-v2')
+  chrome.storage.local.get(['emails']).then(res=>{
+    let emails = res.emails || []
   for (let feed of data){
     const email = feed.querySelectorAll('span[dir=ltr]')[1]?.innerText.split(' ')?.filter((item)=>item.includes('@'))
     const parsedEmail = parseEmail(email && email[0])
     console.log("email",parsedEmail)
     if (parsedEmail){
-      chrome.storage.local.get(['emails']).then(res=>{
+      // chrome.storage.local.get(['emails']).then(res=>{
         console.log("emails",res)
           console.log("parseEMail",parsedEmail)
-          const isExist = res.emails.filter((item)=>item === parsedEmail)
-          if (!isExist.length){
-            chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+          const isExist = emails?.filter((item)=>item === parsedEmail)
+          if (!isExist?.length){
+            // chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+            emails.push(parsedEmail)
           }
-      })
+      // })
     }
    
   }
+  console.log("emails",emails)
+  chrome.storage.local.set({ emails: emails})
+
+  })
+  
+
   //loop scroll in interval
   const newDate = new Date()
   emailInterval = setInterval(()=>{
@@ -172,21 +181,32 @@ const executeScriptsaveOpenJobsEmail = () => {
     }
     window.scrollBy(600,600)
     const data = document.getElementsByClassName('feed-shared-update-v2')
-    for (let feed of data){
-      const email = feed.querySelectorAll('span[dir=ltr]')[1].innerText.split(' ').filter((item)=>item.includes('@'))
-      const parsedEmail = parseEmail(email && email[0])
-      if (parsedEmail){
-        chrome.storage.local.get(['emails']).then(res=>{
-          console.log("emails",res)
-          console.log("parseEMail",parsedEmail)
-          const isExist = res.emails.filter((item)=>item === parsedEmail)
-          if (!isExist.length){
-          chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+    chrome.storage.local.get(['emails']).then(res=>{
+      let emails = res.emails || []
+      for (let feed of data){
+        const email = feed.querySelectorAll('span[dir=ltr]')[1].innerText.split(' ').filter((item)=>item.includes('@'))
+        const parsedEmail = parseEmail(email && email[0])
+        if (parsedEmail){
+          // chrome.storage.local.get(['emails']).then(res=>{
+            console.log("emails",res)
+            console.log("parseEMail",parsedEmail)
+            const isExist = emails?.filter((item)=>item === parsedEmail)
+            if (!isExist?.length){
+            // chrome.storage.local.set({ emails: [...res.emails, parsedEmail]})
+            emails.push(parsedEmail)
           }
-        })
+          // })
+        }
+        
       }
-      
-    }
+      console.log("emails",emails)
+      chrome.storage.local.set({ emails: emails})
+
+    })
+
+   
+
+
   },2000)
   return 6;
   
@@ -200,7 +220,7 @@ const saveOpenJobsEmail = () => {
     const EmailsDiv = document.createElement('div')
     chrome.storage.local.get(['emails']).then((res)=>{
         
-      res.emails.map(email=>{
+      res.emails?.map(email=>{
         const newContent = document.createElement('div')
         newContent.classList.add("email-list-item")
         const text = document.createTextNode(`${email}`)
@@ -349,7 +369,7 @@ settings[0]?.addEventListener('click',() => {
   if (!isExistRadio[0]){
     newDiv.classList.add("radio-select");
     const text = document.createTextNode("select notification by user only")
-    const textJobEmail = document.createTextNode("Save email for new jobs")
+    const textJobEmail = document.createTextNode("Save company/candidates emails")
     const x = document.createElement("INPUT");
     x.setAttribute("type", "checkbox");
     x.setAttribute("id", "radio-notification");
@@ -434,12 +454,18 @@ settings[0]?.addEventListener('click',() => {
           const EmailsParentDiv = document.getElementById('emails')
           console.log("div emaild",EmailsParentDiv)
           EmailsParentDiv && EmailsParentDiv.appendChild(EmailsDiv)
+          const loadingButton = document.getElementsByClassName('loading')[0]
+          loadingButton.classList.display = 'none !important'
+          loadingButton.innerText = "loaded successfully!"
+
         }
       setEmailsInDom()
       },1000*60)
       saveOpenJobsEmail()
     } else{
       clearInterval(emailInterval)
+      const loadingButton = document.getElementsByClassName('loading')[0]
+      loadingButton.style.display = 'none'
       chrome.storage.local.get(['emails']).then(res=>{
        console.log("emails",res.emails)
       })
@@ -447,10 +473,11 @@ settings[0]?.addEventListener('click',() => {
     })
     newContent.appendChild(text)
     newContent.appendChild(x)
-    newDiv.appendChild(newContent);
+   
     newContent1.appendChild(textJobEmail)
     newContent1.appendChild(emailInput)
     newDiv.appendChild(newContent1)
+    newDiv.appendChild(newContent);
     const br = document.createElement("br");
     newDiv.appendChild(br)
     const parent = document.getElementById('notifications-settings');
