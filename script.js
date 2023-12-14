@@ -17,6 +17,9 @@ const setDOMInfo = info => {
 
       const newDiv = document.createElement("div");
       newDiv.class= "mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
+      newDiv.style.display = 'flex'
+      newDiv.style.justifyContent = 'space-between'
+      newDiv.style.paddingBottom =  '13px'
       info && ['connection','messages','notification'].forEach((item)=>{
        
         const newContent = document.createElement('div')
@@ -39,10 +42,31 @@ const setDOMInfo = info => {
     info && info.notificationDetails.map((notificationItem)=>{
       
       const newContent = document.createElement('div')
+      newContent.style.boxShadow = '2px 2px 5px saddlebrown';
+      newContent.style.borderRadius = '10px';
+      newContent.style.marginBottom = '-12px';
       newContent.classList.add("notification-list-item")
+      newContent.classList.add("list-group-item")
+      newContent.classList.add("list-group-item-warning")
+      newContent.style.color = 'black'
+      let isBigNotification = false
+      // let isMoreText
+      // if (notificationItem?.length > 150){
+      //   isBigNotification = true
+      //  isMoreText = document.createElement('div')
+      //  isMoreText.addEventListener('click',()=>{
+       
+      //  })
+      //  const textRead = document.createTextNode('Read more')
+      //  isMoreText.appendChild(textRead)
+      // }
       const text = document.createTextNode(`${notificationItem}`)
+
       newContent.appendChild(text)
       notificationDDiv.appendChild(newContent);
+      // if(isBigNotification){
+      //   notificationDDiv.appendChild(isMoreText);
+      // }
       const br = document.createElement("br");
       br.classList.add("notification-list-item")
 
@@ -53,11 +77,16 @@ const setDOMInfo = info => {
 
     info && info.messageDetails.map((messageItem)=>{
       const newContent = document.createElement('div')
+      newContent.classList.add("list-group-item")
+      newContent.classList.add("list-group-item-warning")
+      newContent.style.color = 'black'
+      newContent.style.marginBottom = '8px';
+      newContent.style.borderRadius = '4px';
       const text = document.createTextNode(`${messageItem}`)
       newContent.appendChild(text)
       messageDDiv.appendChild(newContent);
       const br = document.createElement("br");
-      messageDDiv.appendChild(br)
+      // messageDDiv.appendChild(br)
     })
     parent.insertBefore(newDiv, currentDiv.nextSibling);
     notificationDetailDiv.appendChild(notificationDDiv)
@@ -67,11 +96,16 @@ const setDOMInfo = info => {
     // console.log("emailllllllllldvi",emailDiv)
     //set email in dom
     const EmailsDiv = document.createElement('div')
+    EmailsDiv.classList.add("list-group")
     chrome.storage.local.get(['emails']).then((res)=>{
         console.log("Emails", res.emails)
       res.emails?.map(email=>{
         const newContent = document.createElement('div')
+        newContent.classList.add("list-group-item")
+        newContent.classList.add("list-group-item-warning")
         newContent.classList.add("email-list-item")
+        newContent.style.color = 'black'
+        newContent.style.marginBottom = '7px'
         const text = document.createTextNode(`${email}`)
         newContent.appendChild(text)
         EmailsDiv.appendChild(newContent);
@@ -108,11 +142,15 @@ let emailInterval
 const executeScriptsaveOpenJobsEmail = () => {
   const setEmailsInDom = () => {
     const EmailsDiv = document.createElement('div')
+    EmailsDiv.classList.add('list-group')
     chrome.storage.local.get(['emails']).then((res)=>{
         
       res.emails?.map(email=>{
         const newContent = document.createElement('div')
         newContent.classList.add("email-list-item")
+        newContent.classList.add("list-group-item")
+        newContent.classList.add("list-group-item-warning")
+        newContent.style.color = 'black'
         const text = document.createTextNode(`${email}`)
         newContent.appendChild(text)
         EmailsDiv.appendChild(newContent);
@@ -218,10 +256,14 @@ const saveOpenJobsEmail = () => {
   // 
   const setEmailsInDom = () => {
     const EmailsDiv = document.createElement('div')
+    EmailsDiv.classList.add('list-group')
     chrome.storage.local.get(['emails']).then((res)=>{
         
       res.emails?.map(email=>{
         const newContent = document.createElement('div')
+        newContent.classList.add("list-group-item")
+        newContent.classList.add("list-group-item-warning")
+        newContent.style.color = 'black'
         newContent.classList.add("email-list-item")
         const text = document.createTextNode(`${email}`)
         newContent.appendChild(text)
@@ -438,10 +480,15 @@ settings[0]?.addEventListener('click',() => {
         const setEmailsInDom = () => {
           console.log("emails in dom")
           const EmailsDiv = document.createElement('div')
+          EmailsDiv.classList.add('list-group')
           chrome.storage.local.get(['emails']).then((res)=>{
               
             res.emails.map(email=>{
               const newContent = document.createElement('div')
+              newContent.classList.add("list-group-item")
+              newContent.classList.add("list-group-item-warning")
+              newContent.style.color = 'black'
+              newContent.style.marginBottom = '7px'
               newContent.classList.add("email-list-item")
               const text = document.createTextNode(`${email}`)
               newContent.appendChild(text)
