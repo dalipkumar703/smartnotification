@@ -325,7 +325,7 @@ const notificationUpdates =  () => {
     // get filter notifications
     notificationsResult.forEach((item)=>{
       console.log("item",item)
-      if(item.children && item.children[0]?.children[0].ariaLabel?.includes('profile')){
+      if(item.children && (item.children[0]?.children[0].ariaLabel?.includes('profile') || item.children[0]?.children[1]?.ariaLabel?.includes('profile'))){
           console.log("true")
           notificationList.filterNotifications.push(item.innerText)
       }
@@ -429,7 +429,14 @@ settings[0]?.addEventListener('click',() => {
          filterNotifications &&filterNotifications.map((notificationItem)=>{
           console.log("inside filter",notificationItem)
           const newContent = document.createElement('div')
+          // newContent.classList.add("notification-list-item")
+          newContent.style.boxShadow = '2px 2px 5px saddlebrown';
+          newContent.style.borderRadius = '10px';
+          newContent.style.marginBottom = '-12px';
           newContent.classList.add("notification-list-item")
+          newContent.classList.add("list-group-item")
+          newContent.classList.add("list-group-item-warning")
+          newContent.style.color = 'black'
           const text = document.createTextNode(`${notificationItem}`)
           newContent.appendChild(text)
           notificationDDiv.appendChild(newContent);
@@ -452,7 +459,14 @@ settings[0]?.addEventListener('click',() => {
           notificationResult &&notificationResult.map((notificationItem)=>{
            console.log("inside filter",notificationItem)
            const newContent = document.createElement('div')
+          //  newContent.classList.add("notification-list-item")
+           newContent.style.boxShadow = '2px 2px 5px saddlebrown';
+           newContent.style.borderRadius = '10px';
+           newContent.style.marginBottom = '-12px';
            newContent.classList.add("notification-list-item")
+           newContent.classList.add("list-group-item")
+           newContent.classList.add("list-group-item-warning")
+           newContent.style.color = 'black'
            const text = document.createTextNode(`${notificationItem}`)
            newContent.appendChild(text)
            notificationDDiv.appendChild(newContent);
